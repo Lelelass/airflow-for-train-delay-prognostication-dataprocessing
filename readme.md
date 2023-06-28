@@ -1,4 +1,4 @@
-# A pipeline for real time ML inference over Trafiklab Data, managed by airflow.
+# A pipeline for real time ML inference over Trafiklab Data, managed by airflow. :station:
 
 This repo is published from early development stage, and the main goal is to port the pipeline exposed in the following schema using Airflow, Docker, and a Ubuntu vm hosted on Azure.
 
