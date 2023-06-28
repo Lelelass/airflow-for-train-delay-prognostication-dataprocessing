@@ -1,3 +1,4 @@
 logs
 **__pycache__**
 static_data_retrieval copy.py
+postgres.env
