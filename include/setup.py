@@ -17,8 +17,10 @@ def _retrieve_blob_service_client(account_name):
     shared_access_key = os.getenv("AZURE_STORAGE_ACCESS_KEY")
 
     blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
+
+    if blob_service_client.account_name is not None:
+        print("Connection success")
     
-    return blob_service_client
 
 @task_group(group_id="setup_data_directories")
 def setup_directories():
@@ -41,7 +43,8 @@ def connect_to_storage():
     establish_connection_to_blob = PythonOperator(
         task_id = "establish_connection_to_blob",
         python_callable= _retrieve_blob_service_client,
-        op_kwargs = {"account_name" : "trainmetricsll"}
+        op_kwargs = {"account_name" : "trainmetricsll"},
+        do_xcom_push = True
     )
 
     success_setup = BashOperator(
