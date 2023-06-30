@@ -11,11 +11,8 @@ data_path = Path(__file__).parents[1] / "data"
 datalake_path = data_path / "data_lake"
 data_warehouse_path = data_path / "data_warehouse"
 
-def _retrieve_blob_service_client(account_name):
-    load_dotenv()
+def _retrieve_blob_service_client(account_name, shared_access_key):
     account_url=f"https://{account_name}.blob.core.windows.net"
-    shared_access_key = os.getenv("AZURE_STORAGE_ACCESS_KEY")
-
     blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
 
     if blob_service_client.account_name is not None:
@@ -39,11 +36,15 @@ def setup_directories():
 
 @task_group(group_id="connect_to_azure_storage")
 def connect_to_storage():
+    load_dotenv()
+    shared_access_key = os.getenv("AZURE_STORAGE_ACCESS_KEY")
+    account_name = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
 
     establish_connection_to_blob = PythonOperator(
         task_id = "establish_connection_to_blob",
         python_callable= _retrieve_blob_service_client,
-        op_kwargs = {"account_name" : "trainmetricsll"},
+        op_kwargs = {"account_name" : account_name
+                     , "shared_access_key": shared_access_key},
         do_xcom_push = True
     )
 
