@@ -1,31 +1,24 @@
-# %%
-
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from pathlib import Path
 from airflow.decorators import task_group
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
+from dotenv import load_dotenv
+import os
 
 data_path = Path(__file__).parents[1] / "data"
 datalake_path = data_path / "data_lake"
 data_warehouse_path = data_path / "data_warehouse"
 
-def _connect_to_storage():
-    token_credential = DefaultAzureCredential()
+def _retrieve_blob_service_client(account_name):
+    load_dotenv()
+    account_url=f"https://{account_name}.blob.core.windows.net"
+    shared_access_key = os.getenv("AZURE_STORAGE_ACCESS_KEY")
 
-    blob_service_client = BlobServiceClient(
-            account_url="https://trainmetricsll.blob.core.windows.net",
-            credential=token_credential)
+    blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
     
     return blob_service_client
-
-blob_service_client = _connect_to_storage()
-list(blob_service_client.list_containers())
-
-
-
-# %%
 
 @task_group(group_id="setup_data_directories")
 def setup_directories():
@@ -44,9 +37,11 @@ def setup_directories():
 
 @task_group(group_id="connect_to_azure_storage")
 def connect_to_storage():
-    establish_connection = PythonOperator(
-        task_id = "establish_connection",
-        python_callable= _connect_to_storage
+
+    establish_connection_to_blob = PythonOperator(
+        task_id = "establish_connection_to_blob",
+        python_callable= _retrieve_blob_service_client,
+        op_kwargs = {"account_name" : "trainmetricsll"}
     )
 
     success_setup = BashOperator(
@@ -54,5 +49,4 @@ def connect_to_storage():
     bash_command = f"echo setup data directory successful"
     )
 
-    establish_connection >> success_setup
-# %%
+    establish_connection_to_blob >> success_setup
