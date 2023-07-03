@@ -6,6 +6,7 @@ from airflow.decorators import task_group
 from dotenv import load_dotenv
 from include.gtfs_regio_api import RegioFetcher
 from pathlib import Path
+import os
 
 
 def _get_static_rt_data():
