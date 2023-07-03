@@ -1,12 +1,18 @@
 #%%
-
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.decorators import task_group
-from dotenv import load_dotenv
 from include.gtfs_regio_api import RegioFetcher
 from pathlib import Path
 import os
+import path
+import sys
+ 
+# directory reach
+directory = path.path(__file__).abspath()
+ 
+# setting path
+sys.path.append(directory.parent.parent)
 
 
 def _get_static_rt_data():
@@ -14,7 +20,7 @@ def _get_static_rt_data():
     api_key_static = os.getenv("API_KEY_REGIO_STA")
     api_url_static = "https://opendata.samtrafiken.se/gtfs"
     fetcher = RegioFetcher(OPERATOR, api_key_static,api_url_static)
-    fetcher.get_static(Path(__file__).parent[1] / 'data' / 'static_data_temp')
+    fetcher.get_static(Path("./data/static_data_temp"))
 
 _get_static_rt_data()
 
