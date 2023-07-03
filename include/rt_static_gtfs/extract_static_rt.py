@@ -1,9 +1,23 @@
+#%%
+
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.decorators import task_group
 from dotenv import load_dotenv
-import os
+from include.gtfs_regio_api import RegioFetcher
+from pathlib import Path
 
+
+def _get_static_rt_data():
+    OPERATOR = 'skane'
+    api_key_static = os.getenv("API_KEY_REGIO_STA")
+    api_url_static = "https://opendata.samtrafiken.se/gtfs"
+    fetcher = RegioFetcher(OPERATOR, api_key_static,api_url_static)
+    fetcher.get_static(Path(__file__).parent[1] / 'data' / 'static_data_temp')
+
+_get_static_rt_data()
+
+#%%
 
 def _retrieve_blob_service_client(account_name, shared_access_key):
     from azure.storage.blob import BlobServiceClient
