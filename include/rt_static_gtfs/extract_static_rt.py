@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 local_static_data_path = Path(__file__).parents[2].joinpath("./data/static_data_temp")
 
 def _get_static_rt_data(local_static_data_path:Path, api_key_static:str)->None:
-    from gtfs_regio_api import RegioFetcher
+    from plugins.gtfs_regio_api import RegioFetcher
     OPERATOR = 'skane'
     api_url_static = "https://opendata.samtrafiken.se/gtfs"
     fetcher = RegioFetcher(OPERATOR, api_key_static,api_url_static)
@@ -49,8 +49,10 @@ def upload_static_data_to_azure_blob_storage():
     push_static_data_to_blob = PythonOperator(
         task_id = "push_static_data_to_blob",
         python_callable= _push_static_zip_to_blob,
-        op_kwargs = {"account_name" : account_name
-                     , "shared_access_key": shared_access_key},
+        op_kwargs = {"account_name" : account_name,
+                     "shared_access_key": shared_access_key,
+                     "local_static_data_path":local_static_data_path,
+                     "container_name":"gtfs-static"},
         do_xcom_push = True
     )
 
