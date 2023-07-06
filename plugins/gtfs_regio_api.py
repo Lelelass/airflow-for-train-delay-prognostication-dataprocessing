@@ -1,7 +1,9 @@
 import requests
 from pathlib import Path
-import time
 import datetime as dt 
+from pytz import timezone
+import time
+
 
 AVAILABLE_RT_FEEDS = ('ServiceAlerts', 'TripUpdates', 'VehiclePositions')
 
@@ -16,7 +18,10 @@ class RegioFetcher():
         Downloads raw static gtfs .zip in a target folder and returns
         the name of the saved file"""
 
-        file_export_name = f"{self.operator}.zip"
+        # Mark static files with a time stamp in filename
+        day_str_stamp = dt.datetime.now(timezone('Europe/Stockholm')).strftime("%Y-%m-%d %H:%M")
+
+        file_export_name = f"{self.operator}-{day_str_stamp}.zip"
         url = self.api_url
         query = f"/{self.operator}/{self.operator}.zip?key={self.api_key}"
         response = requests.get(url+query)
@@ -45,8 +50,8 @@ class RegioFetcherRt(RegioFetcher):
         When requests status code is 200, downloads raw real-time gtfs .zip in a target folder and returns
         the name of the saved file"""
         
-        today_dt = dt.datetime.fromtimestamp(time.time())
-        date = today_dt.strftime("%Y-%m-%d")
+        today_dt = dt.datetime.now(timezone('Europe/Stockholm'))
+        date = today_dt.strftime("%Y-%m-%d %H:%M")
 
         file_export_name = f"{self.operator}-{self.feed}-{date}.pb"
         url = self.api_url

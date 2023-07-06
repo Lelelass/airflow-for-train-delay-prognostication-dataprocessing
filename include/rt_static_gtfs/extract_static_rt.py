@@ -19,13 +19,14 @@ def _push_static_zip_to_blob(local_static_data_path:str,account_name:str, contai
     from azure.storage.blob import BlobServiceClient
     account_url=f"https://{account_name}.blob.core.windows.net"
     blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
+    locally_storred_temp_file = list(local_static_data_path.rglob("*.zip"))[0].as_posix()[-26:]
 
     if blob_service_client.account_name is not None:
         print("Connection to blob: success")
         try:
             container_client = blob_service_client.get_container_client(container=container_name)
-            with open(file=local_static_data_path.joinpath('./skane.zip'), mode="rb") as data:
-                blob_client = container_client.upload_blob(name="skane.zip", data=data, overwrite=True)
+            with open(file=local_static_data_path.joinpath(f'./{locally_storred_temp_file}'), mode="rb") as data:
+                blob_client = container_client.upload_blob(name=f"{locally_storred_temp_file}", data=data, overwrite=True)
         except ConnectionError as ce:
             print("the upload to the blob storage failed")
 
@@ -58,7 +59,7 @@ def upload_static_data_to_azure_blob_storage():
 
     remove_static_local_files = BashOperator(
     task_id =  "remove_static_local_files",
-    bash_command = f"cd {local_static_data_path.as_posix()} && rm skane.zip"
+    bash_command = f"cd {local_static_data_path.as_posix()} && rm $(ls | grep '.zip')"
     )
 
     fetch_static_from_koda_api >> push_static_data_to_blob >> remove_static_local_files
