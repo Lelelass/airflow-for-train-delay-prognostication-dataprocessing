@@ -59,7 +59,8 @@ def upload_static_data_to_azure_blob_storage():
 
     remove_static_local_files = BashOperator(
     task_id =  "remove_static_local_files",
-    bash_command = f"cd {local_static_data_path.as_posix()} && rm $(ls | grep '.zip')"
+    # Find and delete files staring with skane and ending by .zip
+    bash_command = f"cd {local_static_data_path.as_posix()} && rm $(ls | grep -E 'skane.*.zip')"
     )
 
     fetch_static_from_koda_api >> push_static_data_to_blob >> remove_static_local_files

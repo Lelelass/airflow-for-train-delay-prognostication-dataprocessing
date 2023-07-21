@@ -19,7 +19,7 @@ class RegioFetcher():
         the name of the saved file"""
 
         # Mark static files with a time stamp in filename
-        day_str_stamp = dt.datetime.now(timezone('Europe/Stockholm')).strftime("%Y-%m-%d %H:%M")
+        day_str_stamp = dt.datetime.now(timezone('Europe/Stockholm')).strftime("%Y-%m-%d_%H:%M")
 
         file_export_name = f"{self.operator}-{day_str_stamp}.zip"
         url = self.api_url
