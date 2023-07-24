@@ -1,9 +1,9 @@
 from datetime import datetime
-from airflow.decorators import dag, task_group, task
+from airflow.decorators import dag
 from include.rt_static_gtfs.extract_static_rt import upload_static_data_to_azure_blob_storage
 
 
-@dag(dag_id = "static_data_retrieval", start_date=datetime(2023,6,28), end_date=datetime(2023,7,22), catchup=False)
+@dag(dag_id = "static_data_retrieval", start_date=datetime(2023,6,28), end_date=datetime(2023,7,25), catchup=False)
 def static_data_retrieval():
     upload_static_data_to_azure =upload_static_data_to_azure_blob_storage()
 
