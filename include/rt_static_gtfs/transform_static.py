@@ -84,7 +84,7 @@ def _store_train_trips_at_day_csv_blob(task_instance, account_name:str, containe
     """Push the daily train trips to the storage account container as a csv blob"""
     from azure.storage.blob import BlobServiceClient
     account_url=f"https://{account_name}.blob.core.windows.net"
-    train_trips_csv_fpath= task_instance.xcom_pull(task_ids ="save_train_trips_at_day_as_csv")
+    train_trips_csv_fpath= task_instance.xcom_pull(task_ids ="transform_static_data.save_train_trips_at_day_as_csv")
     print(train_trips_csv_fpath)
     blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
     container_client = blob_service_client.get_container_client(container_name)
