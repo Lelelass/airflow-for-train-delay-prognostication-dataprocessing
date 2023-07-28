@@ -106,26 +106,26 @@ def transform_static_data():
     )
 
     load_gtfs = PythonOperator(
-        task_id ="Load static regional gtfs",
+        task_id ="load_static_regional_gtfs",
         python_callable=_load_gtfs,
         do_xcom_push = True
     )
 
     get_train_trips_at_day = PythonOperator(
-        task_id ="Get train trips at day",
+        task_id ="get_train_trips_at_day",
         python_callable= _get_train_trips_at_day,
         op_args=[],
         do_xcom_push=True
     )
 
     train_trips_at_day_to_csv = PythonOperator(
-        task_id = "Save rain_trips_at day as csv",
+        task_id = "save_train_trips_at_day_as_csv",
         python_callable=_train_trips_at_day_to_csv,
         op_args=[]
     )
 
     store_train_trips_at_day_csv_blob = PythonOperator(
-        task_id= "store train_trips_at_day to csv blob",
+        task_id= "store_train_trips_at_day_to_csv_blob",
         python_callable=_store_train_trips_at_day_csv_blob,
         op_kwargs = {"account_name" : account_name,
                 "shared_access_key": shared_access_key,
