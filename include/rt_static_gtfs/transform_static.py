@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import datetime as dt
 import pandas as pd
 
-temp_data_path = Path("./data/static_data_transform_temp")
+temp_data_path = Path(__file__).parents[2].joinpath("./data/static_data_transform_temp")
 today = dt.datetime.now().strftime("%Y-%m-%d")
 
 
