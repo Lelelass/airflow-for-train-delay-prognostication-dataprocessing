@@ -85,11 +85,14 @@ def _store_train_trips_at_day_csv_blob(task_instance, account_name:str, containe
     from azure.storage.blob import BlobServiceClient
     account_url=f"https://{account_name}.blob.core.windows.net"
     train_trips_csv_fpath= task_instance.xcom_pull(task_ids ="transform_static_data.save_train_trips_at_day_as_csv")
-    print(train_trips_csv_fpath)
     blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
     container_client = blob_service_client.get_container_client(container_name)
-    blob_client = container_client.get_blob_client(f'static-{today}.csv')
-    blob_client.upload_blob(train_trips_csv_fpath, overwrite=True)
+    try:
+        with open(train_trips_csv_fpath, 'rb') as csv_file:
+            blob_client = container_client.get_blob_client(f'static-{today}.csv')
+            blob_client.upload_blob(name = f'static-{today}.csv', data = csv_file, overwrite=True)
+    except:
+        raise FileNotFoundError(f"Problem with uploading {train_trips_csv_fpath} ")
 
 
 
