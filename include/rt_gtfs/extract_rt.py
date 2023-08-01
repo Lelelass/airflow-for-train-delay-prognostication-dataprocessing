@@ -48,7 +48,7 @@ def upload_rt_pb_data_to_azure_blob_storage():
     python_callable= _push_rt_to_blob,
     op_kwargs = {"account_name" : account_name,
                     "shared_access_key": shared_access_key,
-                    "local_static_data_path":local_rt_temp_data_path,
+                    "local_rt_data_path":local_rt_temp_data_path,
                     "container_name":"gtfs-realtime"}
     )
 
