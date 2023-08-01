@@ -51,7 +51,7 @@ class RegioFetcherRt(RegioFetcher):
         the name of the saved file"""
         
         today_dt = dt.datetime.now(timezone('Europe/Stockholm'))
-        date = today_dt.strftime("%Y-%m-%d %H:%M")
+        date = today_dt.strftime("%Y-%m-%d_%H:%M")
 
         file_export_name = f"{self.operator}-{self.feed}-{date}.pb"
         url = self.api_url
