@@ -4,8 +4,6 @@ from airflow.decorators import task_group
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import datetime as dt
-import pandas as pd
 
 local_rt_temp_data_path = Path(__file__).parents[2].joinpath("./data/rt_data_temp")
 
