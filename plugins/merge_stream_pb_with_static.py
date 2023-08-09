@@ -64,8 +64,11 @@ def get_merged_df_from_path(path: str, train_trips_at_day_df:pd.DataFrame) -> pd
 def load_protobuf_from_azure(filename:str, temp_data_path:Path,strorage_account_name:str, train_trips_at_day:pd.DataFrame)->pd.DataFrame:
     try:
         get_pb_file_from_azure(filename, temp_data_path,strorage_account_name)
-    except:
-        ConnectionError("The protobuff file could not be retrieved")
+    except FileNotFoundError as fnfe:
+        print(fnfe)
 
-    df = get_merged_df_from_path(temp_data_path.joinpath(filename),train_trips_at_day)
+    try:
+        df = get_merged_df_from_path(temp_data_path.joinpath(filename),train_trips_at_day)
+    except ValueError as ve:
+        print(ve)
     return df
