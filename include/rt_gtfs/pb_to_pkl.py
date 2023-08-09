@@ -70,7 +70,7 @@ def _push_pkl_to_blob(local_rt_data_path,account_name:str, container_name:str)->
     shared_access_key = os.getenv("AZURE_STORAGE_ACCESS_KEY")
     account_url=f"https://{account_name}.blob.core.windows.net"
     blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
-    locally_storred_temp_file = list(local_rt_data_path.rglob("*.pkl"))[0].as_posix()[-36:]
+    locally_storred_temp_file = list(local_rt_data_path.rglob("*.pkl"))[0].as_posix()[-38:]
     if blob_service_client.account_name is not None:
         print("Connection to blob: success")
         try:
