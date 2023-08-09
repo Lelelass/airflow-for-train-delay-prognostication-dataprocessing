@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 from azure.storage.blob import BlobServiceClient
 from pathlib import Path
+import logging
 
 def get_pb_file_from_azure(filename:str, temp_data_path:Path, strorage_account_name:str):
     """Writes the selected file into a temp folder to be read by func get_merged_df_from_path """
@@ -15,8 +16,11 @@ def get_pb_file_from_azure(filename:str, temp_data_path:Path, strorage_account_n
 
     account_url=f"https://{strorage_account_name}.blob.core.windows.net"
     blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
-    container_client = blob_service_client.get_container_client(container="gtfs-realtime")
-    blob_client = container_client.get_blob_client(filename)
+    try:
+        container_client = blob_service_client.get_container_client(container="gtfs-realtime")
+        blob_client = container_client.get_blob_client(filename)
+    except Exception as e:
+        logging.debug(f"connection not established {e}")
 
     with open(file=temp_data_path.joinpath(filename), mode="wb") as my_blob:
 
