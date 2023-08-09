@@ -115,7 +115,7 @@ def transform_pb_to_pkl():
     )
     remove_temp_local_files = BashOperator(
         task_id = "remove_temp_local_files",    
-        bash_command = f"cd {local_rt_temp_data_path.as_posix()} && rm $(ls | grep -E '*.pb|.csv')"     
+        bash_command = f"cd {local_rt_temp_data_path.as_posix()} && rm $(ls | grep -E '*.pb|.csv|.pkl')"     
     )
 
     get_latest_pb_file >> load_static_data >> load_protobuf >> push_pkl_to_blob >> remove_temp_local_files
