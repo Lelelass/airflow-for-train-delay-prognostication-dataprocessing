@@ -55,13 +55,14 @@ def _load_static_data(strorage_account_name):
 
 
 def _load_protobuf_from_azure(task_instance, temp_data_path:Path,strorage_account_name:str):
+    import re
     last_pb_name = task_instance.xcom_pull(task_ids="transform_pb_to_pkl.get_latest_pb_filename")
     with open(local_rt_temp_data_path.joinpath(f"static-{today}.csv")) as f:
         train_trips_at_day = pd.read_csv(f).drop("Unnamed: 0", axis =1)
         train_trips_at_day = train_trips_at_day.astype({'stop_id' : str, 'trip_id':str})
         
     df = load_protobuf_from_azure(last_pb_name, temp_data_path, strorage_account_name, train_trips_at_day)
-    df.to_pickle(local_rt_temp_data_path.joinpath(f"skane-TripUpdates-{today}.pkl"))
+    df.to_pickle(local_rt_temp_data_path.joinpath(re.sub('pb', 'pkl', last_pb_name)))
 
 def _push_pkl_to_blob(local_rt_data_path,account_name:str, container_name:str)->None:
     from azure.storage.blob import BlobServiceClient
