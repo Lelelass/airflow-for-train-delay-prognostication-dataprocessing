@@ -1,5 +1,6 @@
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.decorators import task_group
 from pathlib import Path
 import os
@@ -58,4 +59,8 @@ def upload_rt_pb_data_to_azure_blob_storage():
     bash_command = f"cd {local_rt_temp_data_path.as_posix()} && rm $(ls | grep -E '*.pb')"
     )
 
-    fetch_rt_from_koda_api >> push_rt_data_to_blob >> remove_rt_pb_local_files
+    trigger_pb_transform_dag = TriggerDagRunOperator(
+        trigger_dag_id="realtime_data_to_pkl"
+    )
+
+    fetch_rt_from_koda_api >> push_rt_data_to_blob >> remove_rt_pb_local_files >> trigger_pb_transform_dag
