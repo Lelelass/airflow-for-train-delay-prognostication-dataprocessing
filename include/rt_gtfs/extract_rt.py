@@ -45,21 +45,22 @@ def upload_rt_pb_data_to_azure_blob_storage():
     )
 
     push_rt_data_to_blob = PythonOperator(
-    task_id = "push_realtime_pb_data_to_blob",
-    python_callable= _push_rt_to_blob,
-    op_kwargs = {"account_name" : account_name,
-                    "shared_access_key": shared_access_key,
-                    "local_rt_data_path":local_rt_temp_data_path,
-                    "container_name":"gtfs-realtime"}
+        task_id = "push_realtime_pb_data_to_blob",
+        python_callable= _push_rt_to_blob,
+        op_kwargs = {"account_name" : account_name,
+                        "shared_access_key": shared_access_key,
+                        "local_rt_data_path":local_rt_temp_data_path,
+                        "container_name":"gtfs-realtime"}
     )
 
     remove_rt_pb_local_files = BashOperator(
-    task_id =  "remove_rt_pb_local_files",
-    # Find and delete files staring with skane and ending by .zip
-    bash_command = f"cd {local_rt_temp_data_path.as_posix()} && rm $(ls | grep -E '*.pb')"
+        task_id =  "remove_rt_pb_local_files",
+        # Find and delete files staring with skane and ending by .zip
+        bash_command = f"cd {local_rt_temp_data_path.as_posix()} && rm $(ls | grep -E '*.pb')"
     )
 
     trigger_pb_transform_dag = TriggerDagRunOperator(
+        task_id ="trigger_data_to_pkl_transform",
         trigger_dag_id="realtime_data_to_pkl"
     )
 
