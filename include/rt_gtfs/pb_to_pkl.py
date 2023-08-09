@@ -27,7 +27,7 @@ def _list_available_pb_at_day(strorage_account_name:str):
 
         pbs_at_day =list(container_client.list_blob_names(name_starts_with = f"skane-TripUpdates-{today}"))
         return pbs_at_day
-    
+
 def _get_latest_pb_filename(strorage_account_name:str):
     last_pb_name = _list_available_pb_at_day(strorage_account_name)[-1]
     return last_pb_name
@@ -55,12 +55,29 @@ def _load_static_data(strorage_account_name):
 
 
 def _load_protobuf_from_azure(task_instance, temp_data_path:Path,strorage_account_name:str):
-    last_pb_name = task_instance.xcom_pull(task_ids='get_latest_pb_file'),
+    last_pb_name = task_instance.xcom_pull(task_ids="transform_pb_to_pkl.get_latest_pb_filename")
     with open(local_rt_temp_data_path.joinpath(f"static-{today}.csv")) as f:
         train_trips_at_day = pd.read_csv(f).drop("Unnamed: 0", axis =1)
         train_trips_at_day = train_trips_at_day.astype({'stop_id' : str, 'trip_id':str})
         
-    load_protobuf_from_azure(last_pb_name, temp_data_path, strorage_account_name, train_trips_at_day)
+    df = load_protobuf_from_azure(last_pb_name, temp_data_path, strorage_account_name, train_trips_at_day)
+    df.to_pickle(local_rt_temp_data_path.joinpath(f"skane-TripUpdates-{today}.pkl"))
+
+def _push_pkl_to_blob(local_rt_data_path,account_name:str, container_name:str)->None:
+    from azure.storage.blob import BlobServiceClient
+    load_dotenv()
+    shared_access_key = os.getenv("AZURE_STORAGE_ACCESS_KEY")
+    account_url=f"https://{account_name}.blob.core.windows.net"
+    blob_service_client = BlobServiceClient(account_url,credential=shared_access_key)
+    locally_storred_temp_file = list(local_rt_data_path.rglob("*.pkl"))[0].as_posix()[-32:]
+    if blob_service_client.account_name is not None:
+        print("Connection to blob: success")
+        try:
+            container_client = blob_service_client.get_container_client(container=container_name)
+            with open(file=local_rt_data_path.joinpath(f'./{locally_storred_temp_file}'), mode="rb") as data:
+                container_client.upload_blob(name=f"{locally_storred_temp_file}", data=data, overwrite=True)
+        except ConnectionError as ce:
+            print(f"the upload to the blob storage failed : {ce}")
 
 
 @task_group(group_id="transform_pb_to_pkl")
@@ -76,8 +93,9 @@ def transform_pb_to_pkl():
     )
 
     load_static_data = PythonOperator(
-         python_callable= _load_static_data,
-         op_args= [account_name],
+        task_id = "load_static_data",
+        python_callable= _load_static_data,
+        op_args= [account_name],
     )
 
     load_protobuf = PythonOperator(
@@ -87,8 +105,16 @@ def transform_pb_to_pkl():
                      "strorage_account_name" :account_name}
     )
 
+    push_pkl_to_blob = PythonOperator(
+        task_id = "push_pkl_to_blob",
+        python_callable= _push_pkl_to_blob,
+        op_kwargs={'local_rt_data_path':local_rt_temp_data_path,
+                   'account_name':account_name, 'container_name':'gtfs-realtime-pkl'
+                   }
+    )
     remove_temp_local_files = BashOperator(
-    bash_command = f"cd {local_rt_temp_data_path.as_posix()} && rm $(ls | grep -E '*.pb|.csv')"     
+        task_id = "remove_temp_local_files",    
+        bash_command = f"cd {local_rt_temp_data_path.as_posix()} && rm $(ls | grep -E '*.pb|.csv')"     
     )
 
-    get_latest_pb_file >> load_static_data >> load_protobuf >> remove_temp_local_files
+    get_latest_pb_file >> load_static_data >> load_protobuf >> push_pkl_to_blob >> remove_temp_local_files
