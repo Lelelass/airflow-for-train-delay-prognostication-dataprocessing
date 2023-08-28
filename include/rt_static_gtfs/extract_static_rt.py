@@ -1,5 +1,6 @@
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.decorators import task_group
 from pathlib import Path
 import os
@@ -63,4 +64,9 @@ def upload_static_data_to_azure_blob_storage():
     bash_command = f"cd {local_static_data_path.as_posix()} && rm $(ls | grep -E 'skane.*.zip')"
     )
 
-    fetch_static_from_koda_api >> push_static_data_to_blob >> remove_static_local_files
+    trigger_pb_transform_dag = TriggerDagRunOperator(
+    task_id ="trigger_data_to_csv_transform",
+    trigger_dag_id="static_data_transformation"
+    )
+
+    fetch_static_from_koda_api >> push_static_data_to_blob >> remove_static_local_files >> trigger_pb_transform_dag
