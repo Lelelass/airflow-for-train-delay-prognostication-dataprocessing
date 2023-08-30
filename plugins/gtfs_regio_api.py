@@ -45,13 +45,14 @@ class RegioFetcherRt(RegioFetcher):
             raise ValueError(f"{type} is not a valid dataset, should be one of {AVAILABLE_RT_FEEDS} ")
 
     def get_realtime(self, save_path:Path)->str:
-        """Query the GTFS Regional api for data on a date and feed of choice.
-        As the data needs to be prepared, checks the request status at 40 sec interval.
-        When requests status code is 200, downloads raw real-time gtfs .zip in a target folder and returns
-        the name of the saved file"""
+        """Query the GTFS Regional api for data on a date and feed of choice."""
         
         today_dt = dt.datetime.now(timezone('Europe/Stockholm'))
         date = today_dt.strftime("%Y-%m-%d_%H:%M")
+        if self.feed == 'VehiclePositions':
+            date = today_dt.strftime("%Y-%m-%d_%H:%M:%S") # More temporal precision needed on position files names
+        else:
+            date = today_dt.strftime("%Y-%m-%d_%H:%M")
 
         file_export_name = f"{self.operator}-{self.feed}-{date}.pb"
         url = self.api_url
